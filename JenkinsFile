@@ -1,0 +1,142 @@
+pipeline{
+    agent any
+    environment {
+    TEST_RESULT_FILE = 'test_result.txt'
+    REPO_URL = 'https://github.com/rainer-45/FinalsDevOps2'
+    PRODUCTION_SERVER1 = '98.82.180.232'
+    PRODUCTION_SERVER2 = '13.223.228.16'
+    TESTING_SERVER = '100.27.46.130'
+    STAGING_SERVER = '54.91.254.94'
+
+    }
+
+ stages{
+        stage('Building'){
+            steps{
+                echo 'Building...'
+                // Add build steps
+                // sh sudo dnf install -y nodejs
+	            // sh sudo dnf install -y npm
+            }
+        } 
+        stage('Deploy to Testing'){
+            steps{
+                echo 'Deploying to testing server.....'
+                sshagent(['ssh-credentials']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ec2-user@$TESTING_SERVER "sudo dnf install -y httpd git"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$TESTING_SERVER "sudo git clone $REPO_URL /var/www/html"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$TESTING_SERVER "sudo systemctl enable httpd"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$TESTING_SERVER "sudo systemctl start httpd"
+                    '''
+                }
+            }
+        } 
+        stage('Selenium test on Testing Environment'){
+            steps{
+              script{
+                try{
+                    //Install Selenium webdriver
+                    sh 'npm install selenium-webdriver'
+                    //Install chrome webdriver
+                    sh 'npm install chromedriver'
+                
+                   //Run the test and capture the output
+                    output = sh(script: 'node test_validation.js', returnStdout: true).trim()
+
+                    //Debugging printing the output
+                    echo "Test Output: ${output}"
+
+                    //Write the result to a file
+
+                    if(output.contains('Test Passed')){
+                        writeFile file: env.TEST_RESULT_FILE, text: 'true'
+                    }else{
+                        writeFile file: env.TEST_RESULT_FILE, text: 'false'
+                    }
+                }catch (Exception e) {
+                    echo "Test failed: ${e.message}"
+                    writeFile file: env.TEST_RESULT_FILE, text: 'false'
+                }
+            }
+             }
+        } 
+        stage('Staging Environment'){
+             when{
+               expression {
+                 // Read the test result from the file id true continue
+                def testResult = readFile(env.TEST_RESULT_FILE).trim()
+                return testResult == 'true'
+                }           
+             }
+            steps{
+             echo 'Staging...'
+             sshagent(['ssh-credentials']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ec2-user@$STAGING_SERVER "sudo dnf install -y httpd git"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$STAGING_SERVER "sudo git clone $REPO_URL /var/www/html"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$STAGING_SERVER "sudo systemctl enable httpd"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$STAGING_SERVER "sudo systemctl start httpd"
+                    '''
+                }
+            }
+        } 
+        stage('Selenium test on Staging Environment'){
+            steps{
+              script{
+                try{
+                    //Install Selenium webdriver
+                    sh 'npm install selenium-webdriver'
+                    //Install chrome webdriver
+                    sh 'npm install chromedriver'
+                
+                   //Run the test and capture the output
+                    output = sh(script: 'node stage_validation.js', returnStdout: true).trim()
+
+                    //Debugging printing the output
+                    echo "Test Output: ${output}"
+
+                    //Write the result to a file
+
+                    if(output.contains('Test Passed')){
+                        writeFile file: env.TEST_RESULT_FILE, text: 'true'
+                    }else{
+                        writeFile file: env.TEST_RESULT_FILE, text: 'false'
+                    }
+                }catch (Exception e) {
+                    echo "Test failed: ${e.message}"
+                    writeFile file: env.TEST_RESULT_FILE, text: 'false'
+                }
+            }
+             }
+        } 
+
+        stage('Production Environment 1'){
+            steps {
+                sshagent(['ssh-credentials']) {  // ID of your SSH credential
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ec2-user@$PRODUCTION_SERVER1 "sudo dnf install -y httpd git"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$PRODUCTION_SERVER1 "sudo git clone $REPO_URL /var/www/html"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$PRODUCTION_SERVER1 "sudo systemctl enable httpd"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$PRODUCTION_SERVER1 "sudo systemctl start httpd"
+                   
+                    '''
+                }
+            }
+        } 
+        stage('Production Environment 2'){
+            steps {
+                sshagent(['ssh-credentials']) {  // ID of your SSH credential
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ec2-user@$PRODUCTION_SERVER2 "sudo dnf install -y httpd git"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$PRODUCTION_SERVER2 "sudo git clone $REPO_URL /var/www/html"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$PRODUCTION_SERVER2 "sudo systemctl enable httpd"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$PRODUCTION_SERVER2 "sudo systemctl start httpd"
+                   
+                    '''
+                }
+            }
+        }
+    }
+
+}
