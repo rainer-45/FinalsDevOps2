@@ -10,10 +10,16 @@ pipeline{
     }
 
  stages{
+        stage('Checkout') {
+            steps {
+               deleteDir() // clean workspace before checkout
+               git branch: 'main',
+               url: $REPO_URL
+             }
+        }
         stage('Building'){
             steps{
                 echo 'Building...'
-                deleteDir()
                 sh 'sudo dnf install -y nodejs'
 	            sh 'sudo dnf install -y npm'
                 sh 'sudo npm install selenium-webdriver'
