@@ -24,7 +24,7 @@ pipeline{
                 echo 'Deploying to testing server.....'
                 sshagent(['ssh-credentials']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no ec2-user@$TESTING_SERVER "sudo dnf install -y httpd git"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$TESTING_SERVER "sudo dnf install -y httpd"
                         ssh -o StrictHostKeyChecking=no ec2-user@$TESTING_SERVER "sudo git clone $REPO_URL /var/www/html"
                         ssh -o StrictHostKeyChecking=no ec2-user@$TESTING_SERVER "sudo systemctl enable httpd"
                         ssh -o StrictHostKeyChecking=no ec2-user@$TESTING_SERVER "sudo systemctl start httpd"
@@ -68,7 +68,7 @@ pipeline{
              echo 'Staging...'
              sshagent(['ssh-credentials']) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no ec2-user@$STAGING_SERVER "sudo dnf install -y httpd git"
+                        ssh -o StrictHostKeyChecking=no ec2-user@$STAGING_SERVER "sudo dnf install -y http"
                         ssh -o StrictHostKeyChecking=no ec2-user@$STAGING_SERVER "sudo git clone $REPO_URL /var/www/html"
                         ssh -o StrictHostKeyChecking=no ec2-user@$STAGING_SERVER "sudo systemctl enable httpd"
                         ssh -o StrictHostKeyChecking=no ec2-user@$STAGING_SERVER "sudo systemctl start httpd"
