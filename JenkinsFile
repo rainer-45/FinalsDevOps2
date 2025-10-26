@@ -10,14 +10,6 @@ pipeline{
     }
 
  stages{
-        stage('Checkout') {
-            steps {
-               deleteDir() // clean workspace before checkout
-               echo 'Checking out!'
-               git branch: 'main',
-               url: $REPO_URL
-             }
-        }
         stage('Building'){
             steps{
                 echo 'Building...'
