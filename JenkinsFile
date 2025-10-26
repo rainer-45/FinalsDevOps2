@@ -13,10 +13,10 @@ pipeline{
         stage('Building'){
             steps{
                 echo 'Building...'
-                sh sudo dnf install -y nodejs
-	            sh sudo dnf install -y npm
-                sh sudo dnf install selenium-webdriver
-                sh sudo dnf install chromedriver
+                sh 'sudo dnf install -y nodejs'
+	            sh 'sudo dnf install -y npm'
+                sh 'sudo npm install selenium-webdriver'
+                sh 'sudo npm install chromedriver'
 
             }
         } 
