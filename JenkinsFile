@@ -2,7 +2,7 @@ pipeline{
     agent any
     environment {
     TEST_RESULT_FILE = 'test_result.txt'
-    REPO_URL = 'https://github.com/rainer-45/FinalsDevOps2/'
+    REPO_URL = 'https://github.com/rainer-45/FinalsDevOps2'
     PRODUCTION_SERVER1 = '98.82.180.232'
     PRODUCTION_SERVER2 = '13.223.228.16'
     TESTING_SERVER = '100.27.46.130'
