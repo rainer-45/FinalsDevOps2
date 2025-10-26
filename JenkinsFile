@@ -2,21 +2,21 @@ pipeline{
     agent any
     environment {
     TEST_RESULT_FILE = 'test_result.txt'
-    REPO_URL = 'https://github.com/rainer-45/FinalsDevOps2'
+    REPO_URL = 'https://github.com/rainer-45/FinalsDevOps2/'
     PRODUCTION_SERVER1 = '98.82.180.232'
     PRODUCTION_SERVER2 = '13.223.228.16'
     TESTING_SERVER = '100.27.46.130'
     STAGING_SERVER = '54.91.254.94'
-
     }
 
  stages{
         stage('Building'){
             steps{
                 echo 'Building...'
-                // Add build steps
-                // sh sudo dnf install -y nodejs
-	            // sh sudo dnf install -y npm
+                    //Install Selenium webdriver
+                    sh 'npm install selenium-webdriver'
+                    //Install chrome webdriver
+                    sh 'npm install chromedriver'
             }
         } 
         stage('Deploy to Testing'){
@@ -36,12 +36,7 @@ pipeline{
             steps{
               script{
                 try{
-                    //Install Selenium webdriver
-                    sh 'npm install selenium-webdriver'
-                    //Install chrome webdriver
-                    sh 'npm install chromedriver'
-                
-                   //Run the test and capture the output
+                    //Run the test and capture the output
                     output = sh(script: 'node test_validation.js', returnStdout: true).trim()
 
                     //Debugging printing the output
@@ -85,11 +80,6 @@ pipeline{
             steps{
               script{
                 try{
-                    //Install Selenium webdriver
-                    sh 'npm install selenium-webdriver'
-                    //Install chrome webdriver
-                    sh 'npm install chromedriver'
-                
                    //Run the test and capture the output
                     output = sh(script: 'node stage_validation.js', returnStdout: true).trim()
 
